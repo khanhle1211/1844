@@ -3,63 +3,71 @@ import matplotlib.pyplot as plt
 import os
 import matplotlib.patches as mpatches
 
+# Graph Initialization
 G = nx.Graph()
 
-# Define the lines with stations, distances, and colors
+# Train route data (stations, distances, colors)
 lines = {
     'Piccadilly Line': (
         ["Acton Town", "Hammersmith", "Earl's Court", "South Kensington", "Green Park", "King's Cross"],
-        [1.5, 1.3, 1.7, 1.8, 2.1],
+        [3.5, 2.1, 1.1, 2.2, 2.7],
         'red'
     ),
     'Northern Line': (
         ["Paddington", "Baker Street", "Euston", "King's Cross", "Angel", "Old Street"],
-        [1.1, 2.0, 1.9, 1.5, 2.3],
+        [2.4, 2.1, 1.5, 1.2, 1.8],
         'blue'
     ),
     'District Line': (
         ["Whitechapel", "Aldgate East", "South Kensington", "Sloane Square", "Victoria", "Vauxhall"],
-        [1.4, 1.2, 1.7, 2.0, 1.6],
+        [1.1, 5.1, 1.1, 1.3, 1.6],
         'green'
     ),
     'Victoria Line': (
         ["Notting Hill", "High Street Kensington", "Green Park", "Vauxhall", "Stockwell", "Brixton"],
-        [1.6, 1.5, 1.9, 2.1, 2.2],
+        [2.0, 3.2, 2.1, 1.4, 1.3],
         'purple'
     )
 }
 
-# ✅ Create locations and graphs
+# Dictionary to store the position and color of buttons
 pos = {}
+node_colors = {}
+
+# Add buttons and edges
 for idx, (line, (stations, distances, color)) in enumerate(lines.items()):
     for i, station in enumerate(stations):
         if station not in pos:
-            pos[station] = (i, idx)
+            pos[station] = (i, -idx)  # Gán vị trí duy nhất cho mỗi trạm
+            node_colors[station] = color
         G.add_node(station)
     for i in range(len(stations) - 1):
         G.add_edge(stations[i], stations[i + 1], weight=distances[i], color=color)
 
-# ✅ Graphing
+# Check the connection of the graph
+print("Graph is connected:", nx.is_connected(G))
+
+# Draw edges with color
 edges = G.edges()
-colors = [G[u][v]['color'] for u, v in edges]
-weights = nx.get_edge_attributes(G, 'weight')
+edge_colors = [G[u][v]['color'] for u, v in edges]
+nx.draw_networkx_edges(G, pos, edge_color=edge_colors)
 
-# Draw node + edge
-nx.draw_networkx_nodes(G, pos, node_color='lightyellow', node_size=1200)
-nx.draw_networkx_edges(G, pos, edge_color=colors)
+# Draw buttons with color
+node_color_list = [node_colors[node] for node in G.nodes()]
+nx.draw_networkx_nodes(G, pos, node_color=node_color_list, node_size=1200)
 
-# Label edge
+# Draw distance labels on the edges
 nx.draw_networkx_edge_labels(
     G, pos,
-    edge_labels={(u, v): f"{d}km" for (u, v, d) in G.edges(data='weight')},
+    edge_labels={(u, v): f"{d} km" for (u, v, d) in G.edges(data='weight')},
     font_size=7
 )
 
-# Label station 
-adjusted_labels_pos = {k: (v[0], v[1] + 0.25) for k, v in pos.items()}
-nx.draw_networkx_labels(G, adjusted_labels_pos, font_size=8)
+# Draw station name
+label_pos = {k: (v[0], v[1] + 0.25) for k, v in pos.items()}
+nx.draw_networkx_labels(G, label_pos, font_size=8)
 
-# Create legend for lines
+# Legend
 legend_handles = [
     mpatches.Patch(color=color, label=line)
     for line, (_, _, color) in lines.items()
@@ -73,9 +81,9 @@ plt.legend(
     title_fontsize=9
 )
 
-# ✅ Save and show the plot
+# Title and save image
+plt.title("Task 2: Multi-Line London Transport Map (Real Distances)")
 os.makedirs("output_images", exist_ok=True)
-plt.title("Task 2: Multi-Line London Transport Map")
-plt.tight_layout()  # 👈 Để tránh bị cắt legend
+plt.tight_layout()
 plt.savefig("output_images/task2_output.png", bbox_inches='tight')
 plt.show()

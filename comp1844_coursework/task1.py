@@ -1,13 +1,21 @@
 import networkx as nx
 import matplotlib.pyplot as plt
-import os  # 👈 Libraries for working with directories
-# Create a graph for the Piccadilly line with 6 stations
+import os  # For working with folders
+
+# Initialize the graph for the Piccadilly Line
 G = nx.Graph()
 
-stations = ["Acton Town", "Hammersmith", "Earl's Court", "South Kensington", "Green Park", "King's Cross"]
+# List of real stations on the Piccadilly Line
+stations = [
+    "Acton Town", "Hammersmith", "Earl's Court",
+    "South Kensington", "Green Park", "King's Cross"
+]
 
-distances = [1.5, 1.3, 1.7, 1.8, 2.1]  # đơn vị km
+# Real-world distances between consecutive stations (in km)
+# Data referenced from TfL and Google Maps
+distances = [3.5, 2.1, 1.1, 2.2, 2.7]
 
+# Predefined node positions for visualization purposes
 positions = {
     "Acton Town": (0, 0),
     "Hammersmith": (1, 1),
@@ -21,23 +29,43 @@ positions = {
 for station in stations:
     G.add_node(station, pos=positions[station])
 
-for i in range(len(stations)-1):
-    G.add_edge(stations[i], stations[i+1], weight=distances[i])
+for i in range(len(stations) - 1):
+    G.add_edge(stations[i], stations[i + 1], weight=distances[i])
 
-# Get node location
+# Get node positions
 pos = nx.get_node_attributes(G, 'pos')
 
-# Drawing nodes and edges
+# Draw nodes and edges
 nx.draw(G, pos, with_labels=True, node_color='lightblue', node_size=1500, font_size=9)
+
+# Draw edge labels (distance)
 nx.draw_networkx_edge_labels(
     G,
     pos,
-    edge_labels={(u, v): f"{d} km" for (u, v, d) in G.edges(data='weight')}
+    edge_labels={(u, v): f"{d} km" for (u, v, d) in G.edges(data='weight')},
+    font_size=8
 )
 
-plt.title("Task 1: Piccadilly Line")
+# Set chart title
+plt.title("Task 1: Piccadilly Line (Real Distances)")
 
-# 👇 Save image to folder
+# Save image to folder
 os.makedirs("output_images", exist_ok=True)
 plt.savefig("output_images/task1_output.png")
 plt.show()
+
+# --- Analysis Section ---
+
+# Calculate total, max and min distances
+total_distance = sum(distances)
+max_distance = max(distances)
+min_distance = min(distances)
+
+# Identify which segments are the longest and shortest
+longest_segment = stations[distances.index(max_distance)] + " → " + stations[distances.index(max_distance)+1]
+shortest_segment = stations[distances.index(min_distance)] + " → " + stations[distances.index(min_distance)+1]
+
+# Display summary statistics
+print(f"Total distance of the Piccadilly Line segment: {total_distance:.1f} km")
+print(f"Longest segment: {longest_segment} = {max_distance} km")
+print(f"Shortest segment: {shortest_segment} = {min_distance} km")
